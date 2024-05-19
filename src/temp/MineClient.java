@@ -10,7 +10,7 @@ import java.net.*;
 
 class MineClient extends JFrame {
     static int inPort = 9999;
-    static String address = "192.168.35.225";
+    static String address = "192.168.35.75";
     static public PrintWriter out;
     static public BufferedReader in;
     static int width = 0;
@@ -20,17 +20,23 @@ class MineClient extends JFrame {
     static public Socket socket;
 
     public Container cont;
-    public JPanel p0, p1;
+    public JPanel p0, p1, p2;
     public JTextField widthText, NumMineText;
     public JButton b_map;
     public JButton[] buttons;
-    public ImageIcon bomb=new ImageIcon("bomb.png");;
+    public ImageIcon bomb = new ImageIcon("bomb.png");;
     public ImageIcon normal = new ImageIcon("normal.png");
     public ImageIcon findd = new ImageIcon("find.png");
-    int buttonSize; // assuming p1 is a square panel of 400x400
+
+    JLabel total;
+    int buttonSize;
+
+    int numTry = 0;
+    int numFind = 0;
+    int restMine;
 
     public static void main(String[] args) {
-        temp.MineClient game = new MineClient();
+        MineClient game = new MineClient();
     }
 
     public MineClient() {
@@ -46,6 +52,16 @@ class MineClient extends JFrame {
         p1 = new JPanel();
         p1.setBackground(Color.black);
         p1.setPreferredSize(new Dimension(400, 700));
+
+        total = new JLabel("Try : " + numTry + "     Find : " + numFind + "     Rest of mine : " + restMine);
+        total.setForeground(new Color(50, 150, 200));
+        total.setFont(new Font("Consolas", Font.PLAIN, 25));
+
+        p2 = new JPanel();
+        p2.setLayout(new FlowLayout());
+        p2.setBackground(Color.black);
+        p2.setPreferredSize(new Dimension(400, 100));
+        p2.add(total);
 
         widthText = new JTextField();
         widthText.setPreferredSize(new Dimension(450, 100));
@@ -68,10 +84,10 @@ class MineClient extends JFrame {
 
         b_map = new JButton("gimme that freaking bomb");
         b_map.setBackground(Color.black);
-        Border lineBorder = new LineBorder(new Color(50,150,200), 2);
+        Border lineBorder = new LineBorder(new Color(50, 150, 200), 2);
         b_map.setBorder(lineBorder);
-        b_map.setPreferredSize(new Dimension(350,100));
-        b_map.setForeground(new Color(50,150,200));
+        b_map.setPreferredSize(new Dimension(350, 100));
+        b_map.setForeground(new Color(50, 150, 200));
         b_map.setFont(new Font("Consolas", Font.PLAIN, 20));
         b_map.addActionListener(new MyActionListener0());
 
@@ -80,7 +96,8 @@ class MineClient extends JFrame {
         p0.add(b_map);
         cont.setLayout(new BorderLayout());
         cont.add(p0, BorderLayout.NORTH);
-        cont.add(p1, BorderLayout.SOUTH);
+        cont.add(p1, BorderLayout.CENTER);
+        cont.add(p2, BorderLayout.SOUTH);
 
         pack();
         setVisible(true);
@@ -91,9 +108,19 @@ class MineClient extends JFrame {
             try {
                 width = Integer.parseInt(widthText.getText());
                 num_mine = Integer.parseInt(NumMineText.getText());
+                if (num_mine > width * width) {
+                    showMessageDialog("You have to enter the number of mines within a certain range.", "Wrong input", JOptionPane.WARNING_MESSAGE);
+                    widthText.setEnabled(true);
+                    NumMineText.setEnabled(true);
+                    widthText.setText("Enter width");
+                    NumMineText.setText("Enter num of Mine");
+                    return;
+                }
+                restMine = num_mine;
                 widthText.setEnabled(false);
                 NumMineText.setEnabled(false);
                 b_map.setEnabled(false);
+                total.setText("Try : " + numTry + "     Find : " + numFind + "     Rest of mine : " + restMine);
 
                 socket = new Socket(address, inPort);
                 out = new PrintWriter(socket.getOutputStream(), true);
@@ -118,9 +145,8 @@ class MineClient extends JFrame {
 
                 p1.revalidate();
                 p1.repaint();
-                pack(); // 컴포넌트의 크기에 맞춰 프레임 크기 조정
+                pack();
             }
-
         }
     }
 
@@ -135,25 +161,25 @@ class MineClient extends JFrame {
                 out.println(x + "," + y);
                 String msg = in.readLine();
                 int result = Integer.parseInt(msg);
+                numTry++;
                 if (result >= 0) {
-                    // System.out.println(" Find mine at ("+x+", "+y+")");
+                    numFind++;
+                    restMine--;
                     JButton b = (JButton) e.getSource();
-
 
                     b.setIcon(resizeIcon(bomb, buttonSize, buttonSize));
                     map.updateMap(x, y);
                 } else {
-                    // System.out.println(" No mine at ("+x+", "+y+")");
                     JButton b = (JButton) e.getSource();
-                    b.setIcon(resizeIcon(findd, buttonSize,buttonSize));
+                    b.setIcon(resizeIcon(findd, buttonSize, buttonSize));
                 }
+                total.setText("Try : " + numTry + "     Find : " + numFind + "     Rest of mine : " + restMine);
+                pack();
 
             } catch (Exception e1) {
                 e1.printStackTrace();
             }
-
         }
-
     }
 
     private ImageIcon resizeIcon(ImageIcon icon, int width, int height) {
@@ -162,4 +188,21 @@ class MineClient extends JFrame {
         return new ImageIcon(resizedImg);
     }
 
+    private void showMessageDialog(String message, String title, int messageType) {
+        // Create a custom JPanel for the message
+        JPanel panel = new JPanel();
+        panel.setPreferredSize(new Dimension(400, 200));
+
+        JTextArea messageArea = new JTextArea(message);
+        messageArea.setFont(new Font("Consolas", Font.PLAIN, 30)); // Set font size here
+        messageArea.setLineWrap(true);
+        messageArea.setWrapStyleWord(true);
+        messageArea.setOpaque(false);
+        messageArea.setEditable(false);
+        messageArea.setPreferredSize(new Dimension(380, 180));
+        panel.add(messageArea);
+
+        // Show the dialog with the custom panel
+        JOptionPane.showMessageDialog(null, panel, title, messageType);
+    }
 }
