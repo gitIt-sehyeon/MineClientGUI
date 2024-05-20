@@ -9,8 +9,9 @@ import java.io.*;
 import java.net.*;
 
 class MineClient extends JFrame {
+    //test
     static int inPort = 9999;
-    static String address = "192.168.35.75";
+    static String address = "192.168.0.10";
     static public PrintWriter out;
     static public BufferedReader in;
     static int width = 0;
@@ -22,7 +23,7 @@ class MineClient extends JFrame {
     public Container cont;
     public JPanel p0, p1, p2;
     public JTextField widthText, NumMineText;
-    public JButton b_map;
+    public JButton b_map, b_end;
     public JButton[] buttons;
     public ImageIcon bomb = new ImageIcon("bomb.png");;
     public ImageIcon normal = new ImageIcon("normal.png");
@@ -44,7 +45,7 @@ class MineClient extends JFrame {
         this.setSize(1000, 1000);
         this.setLocation(500, 500);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setResizable(false);
+        this.setResizable(true);
         cont = getContentPane();
         cont.setLayout(new FlowLayout());
         p0 = new JPanel();
@@ -58,10 +59,21 @@ class MineClient extends JFrame {
         total.setFont(new Font("Consolas", Font.PLAIN, 25));
 
         p2 = new JPanel();
-        p2.setLayout(new FlowLayout());
+        p2.setLayout(new FlowLayout(FlowLayout.CENTER,200,0));
         p2.setBackground(Color.black);
         p2.setPreferredSize(new Dimension(400, 100));
         p2.add(total);
+
+        b_end = new JButton("END");
+        b_end.setBackground(Color.black);
+        b_end.setPreferredSize(new Dimension(150,70));
+        b_end.setFont(new Font("Consolas", Font.PLAIN, 35));
+
+        Border widthTextBorder = new LineBorder(new Color(50, 150, 200), 2);
+
+        b_end.setBorder(widthTextBorder);
+
+        p2.add(b_end);
 
         widthText = new JTextField();
         widthText.setPreferredSize(new Dimension(450, 100));
@@ -70,7 +82,6 @@ class MineClient extends JFrame {
         widthText.setBackground(Color.black);
         widthText.setCaretColor(Color.white);
         widthText.setText("Enter width");
-        Border widthTextBorder = new LineBorder(new Color(50, 150, 200), 2);
         widthText.setBorder(widthTextBorder);
 
         NumMineText = new JTextField();
